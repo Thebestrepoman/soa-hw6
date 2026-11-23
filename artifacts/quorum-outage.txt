@@ -1,0 +1,5 @@
+Проверка потери quorum Cassandra
+HTTP 503: {'kafka': True, 'cassandra': False, 'worker': True}
+Корректное событие осталось без commit и не было отправлено в DLQ.
+  SKU-QUORUM-113542-7863 / ZONE-A: available=15, reserved=0; три проекции согласованы
+Quorum восстановлен: HTTP 200, lag=0, отгрузка применена ровно один раз.

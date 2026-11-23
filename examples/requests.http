@@ -1,0 +1,105 @@
+@base = http://localhost:8080
+
+### Приёмка V2. event_id и timestamp зафиксированы, чтобы повтор этого запроса был дублем.
+POST {{base}}/events?schema_version=2
+Content-Type: application/json
+
+{
+  "event_id": "receive-001",
+  "event_type": "PRODUCT_RECEIVED",
+  "timestamp": "2026-04-01T12:00:00Z",
+  "product_id": "SKU-001",
+  "zone_id": "ZONE-A",
+  "quantity": 100,
+  "supplier_id": "SUP-001"
+}
+
+### Проверка результата события
+GET {{base}}/events/receive-001
+
+### Остатки товара по всем зонам и готовый агрегат
+GET {{base}}/inventory/products/SKU-001
+
+### Ручное резервирование 30: A = 70 доступно + 30 резерв
+POST {{base}}/events
+Content-Type: application/json
+
+{"event_id":"reserve-001","event_type":"PRODUCT_RESERVED","timestamp":"2026-04-01T12:01:00Z","product_id":"SKU-001","zone_id":"ZONE-A","quantity":30}
+
+### Перемещение 20: A = 50 доступно, B = 20 доступно
+POST {{base}}/events
+Content-Type: application/json
+
+{"event_id":"move-001","event_type":"PRODUCT_MOVED","timestamp":"2026-04-01T12:02:00Z","product_id":"SKU-001","from_zone_id":"ZONE-A","to_zone_id":"ZONE-B","quantity":20}
+
+### Отгрузка 10: A = 40 доступно
+POST {{base}}/events
+Content-Type: application/json
+
+{"event_id":"ship-001","event_type":"PRODUCT_SHIPPED","timestamp":"2026-04-01T12:03:00Z","product_id":"SKU-001","zone_id":"ZONE-A","quantity":10}
+
+### Заказ на 15: A = 25 доступно + 45 резерв
+POST {{base}}/events
+Content-Type: application/json
+
+{"event_id":"order-create-001","event_type":"ORDER_CREATED","timestamp":"2026-04-01T12:04:00Z","order_id":"ORDER-001","items":[{"product_id":"SKU-001","zone_id":"ZONE-A","quantity":15}]}
+
+### Проверка заказа
+GET {{base}}/orders/ORDER-001
+
+### Завершение заказа: A = 25 доступно + 30 ручного резерва
+POST {{base}}/events
+Content-Type: application/json
+
+{"event_id":"order-complete-001","event_type":"ORDER_COMPLETED","timestamp":"2026-04-01T12:05:00Z","order_id":"ORDER-001"}
+
+### Снятие ручного резерва 5: A = 30 доступно + 25 резерв
+POST {{base}}/events
+Content-Type: application/json
+
+{"event_id":"release-001","event_type":"PRODUCT_RELEASED","timestamp":"2026-04-01T12:06:00Z","product_id":"SKU-001","zone_id":"ZONE-A","quantity":5}
+
+### Инвентаризация: A = 28 доступно + 25 резерв
+POST {{base}}/events
+Content-Type: application/json
+
+{"event_id":"count-001","event_type":"INVENTORY_COUNTED","timestamp":"2026-04-01T12:07:00Z","product_id":"SKU-001","zone_id":"ZONE-A","counted_quantity":28}
+
+### Устаревшее событие: склад остаётся без изменений, outcome=STALE
+POST {{base}}/events
+Content-Type: application/json
+
+{"event_id":"late-001","event_type":"PRODUCT_RECEIVED","timestamp":"2026-04-01T12:02:30Z","product_id":"SKU-001","zone_id":"ZONE-A","quantity":50}
+
+### Гарантированный DLQ: количество -5
+POST {{base}}/events
+Content-Type: application/json
+
+{"event_id":"bad-shipment","event_type":"PRODUCT_SHIPPED","timestamp":"2026-04-01T12:08:00Z","product_id":"SKU-001","zone_id":"ZONE-A","quantity":-5}
+
+### V1: поле supplier_id отсутствует, в Cassandra получится null
+POST {{base}}/events?schema_version=1
+Content-Type: application/json
+
+{"event_id":"v1-receive","event_type":"PRODUCT_RECEIVED","timestamp":"2026-04-01T12:00:00Z","product_id":"SKU-V1","zone_id":"ZONE-A","quantity":11}
+
+### V2: supplier_id сохраняется в Cassandra
+POST {{base}}/events?schema_version=2
+Content-Type: application/json
+
+{"event_id":"v2-receive","event_type":"PRODUCT_RECEIVED","timestamp":"2026-04-01T12:00:00Z","product_id":"SKU-V2","zone_id":"ZONE-A","quantity":12,"supplier_id":"SUP-001"}
+
+### Содержимое зоны
+GET {{base}}/inventory/zones/ZONE-A
+
+### Вместимость и занятость зоны
+GET {{base}}/zones/ZONE-A
+
+### Готовность consumer
+GET http://localhost:8001/health
+
+### Метрики
+GET http://localhost:8001/metrics
+
+### Зарегистрированные версии
+GET http://localhost:8081/subjects/warehouse-events-value/versions

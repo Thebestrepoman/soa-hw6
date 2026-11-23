@@ -1,0 +1,164 @@
+name: soa-hw6
+x-app: &app
+  image: soa-hw6-app:local
+  build: .
+  environment: &app-env
+    KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    SCHEMA_REGISTRY_URL: http://schema-registry:8081
+    CASSANDRA_HOSTS: cassandra-1,cassandra-2,cassandra-3
+    CASSANDRA_KEYSPACE: warehouse
+    CONSUMER_GROUP: warehouse-state-consumer
+  restart: unless-stopped
+x-cassandra: &cassandra
+  image: cassandra:4.1.7
+  environment: &cass-env
+    CASSANDRA_CLUSTER_NAME: SmartWarehouse
+    CASSANDRA_SEEDS: cassandra-1
+    CASSANDRA_DC: dc1
+    CASSANDRA_RACK: rack1
+    CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+    CASSANDRA_NUM_TOKENS: 16
+    MAX_HEAP_SIZE: 768M
+    HEAP_NEWSIZE: 128M
+    JVM_EXTRA_OPTS: -XX:ActiveProcessorCount=2
+  healthcheck:
+    test: [CMD-SHELL, "cqlsh -e 'SELECT release_version FROM system.local' > /dev/null 2>&1"]
+    interval: 15s
+    timeout: 10s
+    retries: 40
+    start_period: 45s
+  restart: unless-stopped
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.9.0
+    hostname: kafka
+    ports: ["127.0.0.1:9092:9092"]
+    environment:
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://kafka:9092,CONTROLLER://kafka:29093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
+    volumes: [kafka-data:/var/lib/kafka/data]
+    healthcheck:
+      test: [CMD-SHELL, "kafka-topics --bootstrap-server kafka:29092 --list > /dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+    restart: unless-stopped
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.9.0
+    ports: ["127.0.0.1:8081:8081"]
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_HEAP_OPTS: -Xms128m -Xmx256m
+    depends_on:
+      kafka: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, "curl -fsS http://localhost:8081/subjects > /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+  cassandra-1:
+    <<: *cassandra
+    container_name: cassandra-1
+    hostname: cassandra-1
+    ports: ["127.0.0.1:9042:9042"]
+    volumes: [cassandra-1-data:/var/lib/cassandra]
+  cassandra-2:
+    <<: *cassandra
+    container_name: cassandra-2
+    hostname: cassandra-2
+    environment:
+      <<: *cass-env
+      CASSANDRA_RACK: rack2
+    volumes: [cassandra-2-data:/var/lib/cassandra]
+    depends_on:
+      cassandra-1: {condition: service_healthy}
+  cassandra-3:
+    <<: *cassandra
+    container_name: cassandra-3
+    hostname: cassandra-3
+    environment:
+      <<: *cass-env
+      CASSANDRA_RACK: rack3
+    volumes: [cassandra-3-data:/var/lib/cassandra]
+    depends_on:
+      cassandra-2: {condition: service_healthy}
+  init:
+    <<: *app
+    restart: 'no'
+    command: [python, -m, warehouse.bootstrap]
+    depends_on:
+      kafka: {condition: service_healthy}
+      schema-registry: {condition: service_healthy}
+      cassandra-1: {condition: service_healthy}
+      cassandra-2: {condition: service_healthy}
+      cassandra-3: {condition: service_healthy}
+  wms:
+    <<: *app
+    command: [uvicorn, warehouse.api:app, --host, 0.0.0.0, --port, '8000']
+    ports: ["127.0.0.1:8080:8000"]
+    depends_on:
+      init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+  consumer:
+    <<: *app
+    ports: ["127.0.0.1:8001:8001"]
+    depends_on:
+      init: {condition: service_completed_successfully}
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+  lag-exporter:
+    <<: *app
+    command: [python, -m, warehouse.lag_exporter]
+    ports: ["127.0.0.1:8002:8002"]
+    depends_on:
+      init: {condition: service_completed_successfully}
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    ports: ["127.0.0.1:9090:9090"]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:11.6.1
+    ports: ["127.0.0.1:3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: warehouse-demo
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+volumes:
+  kafka-data:
+  cassandra-1-data:
+  cassandra-2-data:
+  cassandra-3-data:
+  prometheus-data:
+  grafana-data:

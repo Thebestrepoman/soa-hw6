@@ -1,0 +1,117 @@
+Smart Warehouse — демонстрация 113333-43d9
+Время UTC: 2026-11-20T11:33:33.105487+00:00
+
+1. Базовый цикл склада и заказ
+  SKU-001-113333-43d9 / ZONE-A: available=100, reserved=0; три проекции согласованы
+  SKU-001-113333-43d9 / ZONE-A: available=70, reserved=30; три проекции согласованы
+  SKU-001-113333-43d9 / ZONE-A: available=50, reserved=30; три проекции согласованы
+  SKU-001-113333-43d9 / ZONE-B: available=20, reserved=0; три проекции согласованы
+  SKU-001-113333-43d9 / ZONE-A: available=40, reserved=30; три проекции согласованы
+  SKU-001-113333-43d9 / ZONE-A: available=25, reserved=45; три проекции согласованы
+  SKU-001-113333-43d9 / ZONE-A: available=25, reserved=30; три проекции согласованы
+  SKU-001-113333-43d9 / ZONE-A: available=30, reserved=25; три проекции согласованы
+  SKU-001-113333-43d9 / ZONE-A: available=28, reserved=25; три проекции согласованы
+
+2. Повторная доставка одного event_id
+  SKU-002-113333-43d9 / ZONE-A: available=50, reserved=0; три проекции согласованы
+  Повтор принят Kafka, количество осталось 50.
+
+3. Денормализованные таблицы
+  SKU-003-113333-43d9 / ZONE-A: available=100, reserved=0; три проекции согласованы
+Consistency level set to QUORUM.
+
+ product_id          | last_event_at    | last_event_id                        | total_available | total_reserved
+---------------------+------------------+--------------------------------------+-----------------+----------------
+ SKU-003-113333-43d9 | 1795174426493951 | 75447fb2-6a2f-437e-95ff-d1bf248def95 |             100 |              0
+
+(1 rows)
+
+4. Нарушение порядка: 12:00 → 12:05 → 12:02
+  SKU-004-113333-43d9 / ZONE-A: available=80, reserved=0; три проекции согласованы
+
+5. Невалидное событие попадает в DLQ, следующее проходит
+{
+  "original_event": {
+    "event_id": "d088e3dc-84dc-4774-9f47-42b8af641552",
+    "event_type": "PRODUCT_SHIPPED",
+    "timestamp": "2026-11-20T11:33:50.920879+00:00",
+    "product_id": "SKU-005-113333-43d9",
+    "zone_id": "ZONE-A",
+    "from_zone_id": null,
+    "to_zone_id": null,
+    "order_id": null,
+    "quantity": -5,
+    "counted_quantity": null,
+    "items": [],
+    "supplier_id": null
+  },
+  "original_bytes_base64": "AAAAAAJIZDA4OGUzZGMtODRkYy00Nzc0LTlmNDctNDJiOGFmNjQxNTUyHlBST0RVQ1RfU0hJUFBFREAyMDI2LTExLTIwVDExOjMzOjUwLjkyMDg3OSswMDowMAImU0tVLTAwNS0xMTMzMzMtNDNkOQIMWk9ORS1BAAAAAgkAAAA=",
+  "error_reason": "quantity: ожидается целое число от 1 до 1000000, получено -5",
+  "error_code": "VALIDATION_ERROR",
+  "failed_at": "2026-11-20T11:33:50.929558+00:00",
+  "kafka_metadata": {
+    "topic": "warehouse-events",
+    "partition": 0,
+    "offset": 32,
+    "timestamp": 1795174430922,
+    "key_base64": "d2FyZWhvdXNlLW1haW4=",
+    "headers": []
+  }
+}
+  SKU-005-113333-43d9 / ZONE-A: available=10, reserved=0; три проекции согласованы
+
+8. Схемы V1 и V2 в одном топике
+  SKU-V1-113333-43d9 / ZONE-A: available=11, reserved=0; три проекции согласованы
+  SKU-V2-113333-43d9 / ZONE-A: available=12, reserved=0; три проекции согласованы
+  Schema Registry: версии [1, 2]; V1 supplier_id=null, V2 supplier_id=SUP-001.
+
+6. Отказ одной ноды Cassandra и уровни согласованности
+Datacenter: dc1
+===============
+Status=Up/Down
+|/ State=Normal/Leaving/Joining/Moving
+--  Address     Load        Tokens  Owns (effective)  Host ID                               Rack 
+UN  172.21.0.4  88.98 KiB   16      100.0%            394e0bf7-6dd0-4239-ac65-a7e7807120f5  rack2
+UN  172.21.0.8  93.94 KiB   16      100.0%            8f4674e7-aa60-459e-b719-8ee57a93df92  rack3
+UN  172.21.0.6  180.69 KiB  16      100.0%            876a679c-66d4-4ba8-8772-f86fa3f2c04c  rack1
+
+
+  SKU-006-113333-43d9 / ZONE-A: available=150, reserved=0; три проекции согласованы
+  ONE: запрос выполнен, остаток 150.
+  QUORUM: запрос выполнен, остаток 150.
+  ALL: ожидаемый отказ — нужны 3 реплики, доступны 2.
+  <stdin>:1:NoHostAvailable: ('Unable to complete the operation against any hosts', {<Host: 127.0.0.1:9042 dc1>: Unavailable('Error from server: code=1000 [Unavailable exception] message="Cannot achieve consistency level ALL" info={\'consistency\': \'ALL\', \'required_replicas\': 3, \'alive_replicas\': 2}')})
+Datacenter: dc1
+===============
+Status=Up/Down
+|/ State=Normal/Leaving/Joining/Moving
+--  Address     Load        Tokens  Owns (effective)  Host ID                               Rack 
+UN  172.21.0.4  88.98 KiB   16      100.0%            394e0bf7-6dd0-4239-ac65-a7e7807120f5  rack2
+UN  172.21.0.8  93.94 KiB   16      100.0%            8f4674e7-aa60-459e-b719-8ee57a93df92  rack3
+UN  172.21.0.6  180.69 KiB  16      100.0%            876a679c-66d4-4ba8-8772-f86fa3f2c04c  rack1
+
+
+
+7. Метрики, накопление lag и срабатывание алерта
+  consumer_lag{group="warehouse-state-consumer",partition="0",topic="warehouse-events"} 0.0
+  events_processed_total{event_type="PRODUCT_RECEIVED"} 15.0
+  events_processed_total{event_type="PRODUCT_RESERVED"} 2.0
+  events_processed_total{event_type="PRODUCT_MOVED"} 2.0
+  events_processed_total{event_type="PRODUCT_SHIPPED"} 5.0
+  events_processed_total{event_type="ORDER_CREATED"} 2.0
+  events_processed_total{event_type="ORDER_COMPLETED"} 2.0
+  events_processed_total{event_type="PRODUCT_RELEASED"} 2.0
+  events_processed_total{event_type="INVENTORY_COUNTED"} 2.0
+  cassandra_write_errors_total 0.0
+  Consumer остановлен; отдельный exporter показывает lag=12.
+  Алерт WarehouseConsumerLagHigh: firing.
+  SKU-LAG-113333-43d9 / ZONE-A: available=12, reserved=0; три проекции согласованы
+  Очередь обработана, lag=0. Grafana: http://localhost:3000/d/smart-warehouse
+
+9. Дополнительная проверка: авария после Cassandra, до Kafka commit
+  SKU-CRASH-113333-43d9 / ZONE-A: available=50, reserved=0; три проекции согласованы
+  Процесс завершился с кодом 86 после записи. Offset ещё не подтверждён.
+  SKU-CRASH-113333-43d9 / ZONE-A: available=50, reserved=0; три проекции согласованы
+  После восстановления осталось 50, повторного прибавления нет.
+
+Все выбранные сценарии прошли. Проверки выполнены на работающей инфраструктуре.

@@ -1,0 +1,24 @@
+groups:
+  - name: warehouse
+    rules:
+      - alert: WarehouseConsumerLagHigh
+        expr: consumer_lag{job="warehouse-lag"} > 5
+        for: 20s
+        labels:
+          severity: warning
+        annotations:
+          summary: В очереди склада накопились события
+          description: 'Партиция {{ $labels.partition }} отстаёт на {{ $value }} событий более 20 секунд.'
+      - alert: WarehouseConsumerUnavailable
+        expr: up{job="warehouse-consumer"} == 0
+        for: 20s
+        labels:
+          severity: critical
+        annotations:
+          summary: Consumer недоступен
+      - alert: WarehouseCassandraWritesFailing
+        expr: increase(cassandra_write_errors_total{job="warehouse-consumer"}[2m]) > 0
+        labels:
+          severity: warning
+        annotations:
+          summary: Ошибки записи состояния склада

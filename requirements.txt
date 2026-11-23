@@ -1,0 +1,9 @@
+fastapi==0.115.6
+uvicorn==0.34.0
+confluent-kafka==2.6.1
+fastavro==1.10.0
+cassandra-driver==3.29.2
+requests==2.32.3
+prometheus-client==0.21.1
+pytest==8.3.4
+httpx==0.28.1

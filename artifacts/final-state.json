@@ -1,0 +1,200 @@
+{
+  "verified_at": "2026-11-20T14:37:13.503233+03:00",
+  "health": {
+    "kafka": true,
+    "cassandra": true,
+    "worker": true
+  },
+  "schema_versions": [
+    1,
+    2
+  ],
+  "inventory": {
+    "SKU-001-113333-43d9": {
+      "product_id": "SKU-001-113333-43d9",
+      "total": {
+        "product_id": "SKU-001-113333-43d9",
+        "last_event_at": 1795174420395793,
+        "last_event_id": "b13a9cf5-9d70-40d7-a502-6c4191900fc4",
+        "total_available": 48,
+        "total_reserved": 25
+      },
+      "zones": [
+        {
+          "product_id": "SKU-001-113333-43d9",
+          "zone_id": "ZONE-A",
+          "available_quantity": 28,
+          "last_event_at": 1795174420395793,
+          "last_event_id": "b13a9cf5-9d70-40d7-a502-6c4191900fc4",
+          "manual_reserved_quantity": 25,
+          "reserved_quantity": 25,
+          "supplier_id": null
+        },
+        {
+          "product_id": "SKU-001-113333-43d9",
+          "zone_id": "ZONE-B",
+          "available_quantity": 20,
+          "last_event_at": 1795174415186470,
+          "last_event_id": "d13dcb64-faa0-426b-898f-c6fd3d0975f2",
+          "manual_reserved_quantity": 0,
+          "reserved_quantity": 0,
+          "supplier_id": null
+        }
+      ]
+    },
+    "SKU-002-113333-43d9": {
+      "product_id": "SKU-002-113333-43d9",
+      "total": {
+        "product_id": "SKU-002-113333-43d9",
+        "last_event_at": 1795174421428216,
+        "last_event_id": "25ab41f8-20a7-4e85-8a88-1a1b4ee2ebfb",
+        "total_available": 50,
+        "total_reserved": 0
+      },
+      "zones": [
+        {
+          "product_id": "SKU-002-113333-43d9",
+          "zone_id": "ZONE-A",
+          "available_quantity": 50,
+          "last_event_at": 1795174421428216,
+          "last_event_id": "25ab41f8-20a7-4e85-8a88-1a1b4ee2ebfb",
+          "manual_reserved_quantity": 0,
+          "reserved_quantity": 0,
+          "supplier_id": null
+        }
+      ]
+    },
+    "SKU-004-113333-43d9": {
+      "product_id": "SKU-004-113333-43d9",
+      "total": {
+        "product_id": "SKU-004-113333-43d9",
+        "last_event_at": 1775045100000000,
+        "last_event_id": "5f02214a-0f19-4eaa-ac77-8d17e6f8951d",
+        "total_available": 80,
+        "total_reserved": 0
+      },
+      "zones": [
+        {
+          "product_id": "SKU-004-113333-43d9",
+          "zone_id": "ZONE-A",
+          "available_quantity": 80,
+          "last_event_at": 1775045100000000,
+          "last_event_id": "5f02214a-0f19-4eaa-ac77-8d17e6f8951d",
+          "manual_reserved_quantity": 0,
+          "reserved_quantity": 0,
+          "supplier_id": null
+        }
+      ]
+    },
+    "SKU-006-113333-43d9": {
+      "product_id": "SKU-006-113333-43d9",
+      "total": {
+        "product_id": "SKU-006-113333-43d9",
+        "last_event_at": 1795174445415612,
+        "last_event_id": "a9439ded-6214-49b4-82b1-41ee49a91b99",
+        "total_available": 150,
+        "total_reserved": 0
+      },
+      "zones": [
+        {
+          "product_id": "SKU-006-113333-43d9",
+          "zone_id": "ZONE-A",
+          "available_quantity": 150,
+          "last_event_at": 1795174445415612,
+          "last_event_id": "a9439ded-6214-49b4-82b1-41ee49a91b99",
+          "manual_reserved_quantity": 0,
+          "reserved_quantity": 0,
+          "supplier_id": null
+        }
+      ]
+    },
+    "SKU-V1-113333-43d9": {
+      "product_id": "SKU-V1-113333-43d9",
+      "total": {
+        "product_id": "SKU-V1-113333-43d9",
+        "last_event_at": 1795174433197889,
+        "last_event_id": "b0b77241-2ffc-4377-abbd-e4b6bd09a899",
+        "total_available": 11,
+        "total_reserved": 0
+      },
+      "zones": [
+        {
+          "product_id": "SKU-V1-113333-43d9",
+          "zone_id": "ZONE-A",
+          "available_quantity": 11,
+          "last_event_at": 1795174433197889,
+          "last_event_id": "b0b77241-2ffc-4377-abbd-e4b6bd09a899",
+          "manual_reserved_quantity": 0,
+          "reserved_quantity": 0,
+          "supplier_id": null
+        }
+      ]
+    },
+    "SKU-V2-113333-43d9": {
+      "product_id": "SKU-V2-113333-43d9",
+      "total": {
+        "product_id": "SKU-V2-113333-43d9",
+        "last_event_at": 1795174434218499,
+        "last_event_id": "df69b47b-804a-4634-81e4-2f1ab73a11c3",
+        "total_available": 12,
+        "total_reserved": 0
+      },
+      "zones": [
+        {
+          "product_id": "SKU-V2-113333-43d9",
+          "zone_id": "ZONE-A",
+          "available_quantity": 12,
+          "last_event_at": 1795174434218499,
+          "last_event_id": "df69b47b-804a-4634-81e4-2f1ab73a11c3",
+          "manual_reserved_quantity": 0,
+          "reserved_quantity": 0,
+          "supplier_id": "SUP-001"
+        }
+      ]
+    },
+    "SKU-CRASH-113333-43d9": {
+      "product_id": "SKU-CRASH-113333-43d9",
+      "total": {
+        "product_id": "SKU-CRASH-113333-43d9",
+        "last_event_at": 1795174493843270,
+        "last_event_id": "crash-113333-43d9",
+        "total_available": 50,
+        "total_reserved": 0
+      },
+      "zones": [
+        {
+          "product_id": "SKU-CRASH-113333-43d9",
+          "zone_id": "ZONE-A",
+          "available_quantity": 50,
+          "last_event_at": 1795174493843270,
+          "last_event_id": "crash-113333-43d9",
+          "manual_reserved_quantity": 0,
+          "reserved_quantity": 0,
+          "supplier_id": null
+        }
+      ]
+    },
+    "SKU-QUORUM-113542-7863": {
+      "product_id": "SKU-QUORUM-113542-7863",
+      "total": {
+        "product_id": "SKU-QUORUM-113542-7863",
+        "last_event_at": 1795174553149163,
+        "last_event_id": "9a8ab531-f223-42b1-9ee7-bb2cf0650f54",
+        "total_available": 15,
+        "total_reserved": 0
+      },
+      "zones": [
+        {
+          "product_id": "SKU-QUORUM-113542-7863",
+          "zone_id": "ZONE-A",
+          "available_quantity": 15,
+          "last_event_at": 1795174553149163,
+          "last_event_id": "9a8ab531-f223-42b1-9ee7-bb2cf0650f54",
+          "manual_reserved_quantity": 0,
+          "reserved_quantity": 0,
+          "supplier_id": null
+        }
+      ]
+    }
+  }
+}

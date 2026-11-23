@@ -1,0 +1,12 @@
+NAME                        IMAGE                                   COMMAND                  SERVICE           CREATED              STATUS                          PORTS
+cassandra-1                 cassandra:4.1.7                         "docker-entrypoint.s…"   cassandra-1       5 minutes ago        Up 5 minutes (healthy)          7000-7001/tcp, 7199/tcp, 9160/tcp, 127.0.0.1:9042->9042/tcp
+cassandra-2                 cassandra:4.1.7                         "docker-entrypoint.s…"   cassandra-2       13 minutes ago       Up About a minute (healthy)     7000-7001/tcp, 7199/tcp, 9042/tcp, 9160/tcp
+cassandra-3                 cassandra:4.1.7                         "docker-entrypoint.s…"   cassandra-3       13 minutes ago       Up About a minute (healthy)     7000-7001/tcp, 7199/tcp, 9042/tcp, 9160/tcp
+soa-hw6-consumer-1          soa-hw6-app:local                       "python -m warehouse…"   consumer          About a minute ago   Up About a minute (healthy)     127.0.0.1:8001->8001/tcp
+soa-hw6-grafana-1           grafana/grafana:11.6.1                  "/run.sh"                grafana           5 minutes ago        Up 5 minutes                    127.0.0.1:3000->3000/tcp
+soa-hw6-init-1              soa-hw6-app:local                       "python -m warehouse…"   init              About a minute ago   Exited (0) About a minute ago   
+soa-hw6-kafka-1             confluentinc/cp-kafka:7.9.0             "/etc/confluent/dock…"   kafka             5 minutes ago        Up 5 minutes (healthy)          127.0.0.1:9092->9092/tcp
+soa-hw6-lag-exporter-1      soa-hw6-app:local                       "python -m warehouse…"   lag-exporter      About a minute ago   Up About a minute               127.0.0.1:8002->8002/tcp
+soa-hw6-prometheus-1        prom/prometheus:v2.55.1                 "/bin/prometheus --c…"   prometheus        5 minutes ago        Up 5 minutes                    127.0.0.1:9090->9090/tcp
+soa-hw6-schema-registry-1   confluentinc/cp-schema-registry:7.9.0   "/etc/confluent/dock…"   schema-registry   5 minutes ago        Up 4 minutes (healthy)          127.0.0.1:8081->8081/tcp
+soa-hw6-wms-1               soa-hw6-app:local                       "uvicorn warehouse.a…"   wms               About a minute ago   Up About a minute (healthy)     127.0.0.1:8080->8000/tcp
